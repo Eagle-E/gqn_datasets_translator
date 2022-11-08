@@ -184,7 +184,7 @@ if __name__ == '__main__':
 
     print(f' [-] {tot} scenes in the train dataset')
 
-    ## test
+    ## test test
     file_names = _get_dataset_files(dataset_info, 'test', '.')
 
     tot = 0
