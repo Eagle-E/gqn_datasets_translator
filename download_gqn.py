@@ -88,6 +88,9 @@ os.mkdir(top_path)
 os.mkdir(train_path)
 os.mkdir(test_path)
 
+# if you want to copy whole folder (proportion=1.0): 
+# header = 'gsutil cp -r gs://gqn-dataset/{}'.format(DATASET) 
+# command = '{0}/train/ {1}/'.format(header, train_path)
 header = 'gsutil -m cp gs://gqn-dataset/{}'.format(DATASET)
 
 ## train copy
