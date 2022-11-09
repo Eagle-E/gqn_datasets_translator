@@ -1,8 +1,8 @@
 import os
 import sys
-
 import collections
 
+from argparse import ArgumentParser
 
 DatasetInfo = collections.namedtuple(
     'DatasetInfo',
@@ -62,47 +62,71 @@ DATASETS_INFO = dict(
 )
 
 
-if  len(sys.argv) < 3:
-    print(' [!] you need to give a <str> dataset and a <float> proportion to download')
-    exit()
+def download_proportion(datasetName: str, proportion: float, location: str):
+    dataset_info = DATASETS_INFO[datasetName]
+
+    top_path = location
+    train_path = os.path.join(top_path, 'train')
+    test_path = os.path.join(top_path, 'test')
+
+    os.mkdir(top_path)
+    os.mkdir(train_path)
+    os.mkdir(test_path)
+
+    train_nb = int(proportion * dataset_info.train_size)
+    test_nb = int(proportion * dataset_info.test_size)
+
+    train_length = len(str(dataset_info.train_size))
+    train_template = '{:0%d}-of-{:0%d}.tfrecord' % (train_length, train_length)
+
+    test_length = len(str(dataset_info.test_size))
+    test_template = '{:0%d}-of-{:0%d}.tfrecord' % (test_length, test_length)
+
+    header = 'gsutil -m cp gs://gqn-dataset/{}'.format(datasetName)
+
+    ## train copy
+    for i in range(train_nb):
+        file = train_template.format(i+1, dataset_info.train_size)
+        command = '{0}/train/{1} {2}/{1}'.format(header, file, train_path)
+        # print(command)
+        os.system(command)
+
+    ## test copy
+    for i in range(test_nb):
+        file = test_template.format(i+1, dataset_info.test_size)
+        command = '{0}/test/{1} {2}/{1}'.format(header, file, test_path)
+        # print(command)
+        os.system(command)
 
 
-PROP = float(sys.argv[2])
-DATASET = sys.argv[1]
-dataset_info = DATASETS_INFO[DATASET]
-
-top_path = f'{DATASET}'
-train_path = f'{DATASET}/train'
-test_path = f'{DATASET}/test'
-
-train_nb = int(PROP * dataset_info.train_size)
-test_nb = int(PROP * dataset_info.test_size)
-
-train_length = len(str(dataset_info.train_size))
-train_template = '{:0%d}-of-{:0%d}.tfrecord' % (train_length, train_length)
-
-test_length = len(str(dataset_info.test_size))
-test_template = '{:0%d}-of-{:0%d}.tfrecord' % (test_length, test_length)
-
-os.mkdir(top_path)
-os.mkdir(train_path)
-os.mkdir(test_path)
-
-# if you want to copy whole folder (proportion=1.0): 
-# header = 'gsutil cp -r gs://gqn-dataset/{}'.format(DATASET) 
-# command = '{0}/train/ {1}/'.format(header, train_path)
-header = 'gsutil -m cp gs://gqn-dataset/{}'.format(DATASET)
-
-## train copy
-for i in range(train_nb):
-    file = train_template.format(i+1, dataset_info.train_size)
-    command = '{0}/train/{1} {2}/{1}'.format(header, file, train_path)
-    # print(command)
+def download_whole(datasetName: str, location: str):
+    header = 'gsutil cp -r gs://gqn-dataset/{}'.format(datasetName) 
+    command = '{0}/ {1}/'.format(header, location)
     os.system(command)
 
-## test copy
-for i in range(test_nb):
-    file = test_template.format(i+1, dataset_info.test_size)
-    command = '{0}/test/{1} {2}/{1}'.format(header, file, test_path)
-    # print(command)
-    os.system(command)
+
+if __name__ == '__main__':
+    datasetNames = list(DATASETS_INFO.keys())
+    parser = ArgumentParser(description='Download GQN datasets.')
+                        
+    parser.add_argument('dataset', metavar='dataset', nargs=1, type=str, choices=datasetNames,
+                        help=f'The name of the dataset to download, options: {datasetNames}')
+    parser.add_argument('-p', '--proportion', type=float, default=[1.0], nargs=1,
+                        help='The proportion of the dataset to download (value between 0 and 1)')
+    parser.add_argument('-l', '--location', type=str, default=None, nargs=1,
+                        help='Location of folder to save files to')
+    args = parser.parse_args()
+
+    PROP = args.proportion[0]
+    DATASET = args.dataset[0]
+    LOCATION = args.location[0] if args.location != None else f'{DATASET}'
+
+    assert 0 <= PROP <= 1, "Proportion must be a value in range [0, 1]"
+
+    if PROP < 1:
+        print(f'Downloading {PROP*100:.0f}% of the following dataset: {DATASET}')
+        # download_proportion(DATASET, PROP, LOCATION)
+    else:
+        print(f'Downloading all of the following dataset: {DATASET}')
+        # download_whole(DATASET, LOCATION)
+

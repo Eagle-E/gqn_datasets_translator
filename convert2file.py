@@ -1,4 +1,6 @@
 import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' # suppress everything except errors 
+
 import tensorflow as tf
 import torch
 import gzip
@@ -35,7 +37,7 @@ Convert first 20 records with batch size of 128 in sm5 test
 python convert2file.py ~/gqn_dataset shepard_metzler_5_parts -n 20 -b 128 -m test
 """
 
-tf.logging.set_verbosity(tf.logging.ERROR)  # disable annoying logging
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)  # disable annoying logging
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"  # disable gpu
 
 DatasetInfo = namedtuple('DatasetInfo', ['image_size', 'seq_length'])
@@ -126,7 +128,7 @@ def convert_to_numpy(raw_data, info):
 
 
 if __name__ == '__main__':
-    tf.enable_eager_execution()
+    tf.compat.v1.enable_eager_execution()
     parser = ap.ArgumentParser(description='Convert gqn tfrecords to gzip files.')
     parser.add_argument('base_dir', nargs=1,
                         help='base directory of gqn dataset')
