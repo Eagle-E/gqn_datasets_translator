@@ -1,5 +1,5 @@
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' # suppress everything except errors 
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' # suppress all log messages 
 
 import tensorflow as tf
 import torch
@@ -84,7 +84,7 @@ def save_to_disk(scenes, path):
 
 
 def process_record(record, info, batch_size=None):
-    engine = tf.python_io.tf_record_iterator(record)
+    engine = tf.compat.v1.python_io.tf_record_iterator(record)
 
     scenes = []
     for i, data in enumerate(engine):
@@ -117,9 +117,9 @@ def convert_to_numpy(raw_data, info):
     seq_length = info.seq_length
     image_size = info.image_size
 
-    feature = {'frames': tf.FixedLenFeature(shape=seq_length, dtype=tf.string),
-               'cameras': tf.FixedLenFeature(shape=seq_length * _pose_dim, dtype=tf.float32)}
-    example = tf.parse_single_example(raw_data, feature)
+    feature = {'frames': tf.compat.v1.FixedLenFeature(shape=seq_length, dtype=tf.string),
+               'cameras': tf.compat.v1.FixedLenFeature(shape=seq_length * _pose_dim, dtype=tf.float32)}
+    example = tf.compat.v1.parse_single_example(raw_data, feature)
 
     images = process_images(example, seq_length, image_size)
     poses = process_poses(example, seq_length)
@@ -149,7 +149,8 @@ if __name__ == '__main__':
     print(f'dataset: {dataset}')
 
     info = all_datasets[dataset]
-    data_dir = os.path.join(base_dir, dataset)
+    # data_dir = os.path.join(base_dir, dataset)
+    data_dir = base_dir
     records = collect_files(os.path.join(data_dir, args.mode), '.tfrecord')
 
     if args.first_n is not None:
