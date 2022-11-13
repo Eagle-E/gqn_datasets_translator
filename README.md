@@ -26,6 +26,25 @@ If you want to download a proportion of the dataset only:
 python download_gqn.py <dataset> <proportion>
 ```
 
+Command line options:
+```
+usage: download_gqn.py [-h] [-p PROPORTION] [-l LOCATION] dataset
+
+Download GQN datasets.
+
+positional arguments:
+  dataset               The name of the dataset to download, options: ['jaco', 'mazes', 'rooms_free_camera_with_object_rotations',
+                        'rooms_ring_camera', 'rooms_free_camera_no_object_rotations', 'shepard_metzler_5_parts',
+                        'shepard_metzler_7_parts']
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -p PROPORTION, --proportion PROPORTION
+                        The proportion of the dataset to download (value between 0 and 1. Default=1)
+  -l LOCATION, --location LOCATION  
+                        Location of folder to save files to. If the location doesn't exist, it is created. If the location contains a "train" or "test" folder, the download will be terminated. The default location is the location of the script with a folder the same name as the given dataset.
+```
+
 **Convert the raw dataset**
 
 Command line options:
