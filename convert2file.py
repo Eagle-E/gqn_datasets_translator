@@ -68,8 +68,6 @@ def collect_files(path, ext=None, key=None):
 
 
 def convert_record(record, info, batch_size=None):
-    print(record)
-
     path, filename = os.path.split(record)
     basename = os.path.splitext(filename)[0]
     scenes = process_record(record, info, batch_size)
